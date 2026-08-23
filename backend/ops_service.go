@@ -42,7 +42,7 @@ func (s *OpsService) Create(ctx context.Context, record OpsRecord) (OpsRecord, e
 	}
 	record.CreatedAt = s.clock.Stamp()
 	record.UpdatedAt = record.CreatedAt
-	if err := s.store.Put(context.Background(), record); err != nil {
+	if err := s.store.Put(ctx, record); err != nil {
 		return OpsRecord{}, wrapOps("create", "store.put", err)
 	}
 	s.audit.Add(record.ID, "created", record.Owner)
@@ -52,7 +52,7 @@ func (s *OpsService) Get(ctx context.Context, id string) (OpsRecord, error) {
 	return s.store.Get(ctx, id)
 }
 func (s *OpsService) Search(ctx context.Context, q OpsQuery) (OpsPage, error) {
-	items, err := s.store.List(context.Background())
+	items, err := s.store.List(ctx)
 	if err != nil {
 		return OpsPage{}, err
 	}

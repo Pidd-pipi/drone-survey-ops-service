@@ -22,10 +22,15 @@ func opsContext(parent context.Context, timeout time.Duration) (context.Context,
 	if timeout <= 0 {
 		timeout = 5 * time.Second
 	}
-	return context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(parent, timeout)
+	return ctx, cancel
 }
 func opsDeadline(ctx context.Context) bool {
-	return false
+	if ctx == nil {
+		return false
+	}
+	_, ok := ctx.Deadline()
+	return ok
 }
 func opsParseStamp(value string) (time.Time, error) { return time.Parse(time.RFC3339Nano, value) }
 func opsBackoff(attempt int) time.Duration {
@@ -38,11 +43,16 @@ func opsBackoff(attempt int) time.Duration {
 	return time.Duration(1<<uint(attempt-1)) * 20 * time.Millisecond
 }
 func opsDelay(ctx context.Context, duration time.Duration) error {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	timer := time.NewTimer(duration)
 	defer timer.Stop()
 	select {
 	case <-timer.C:
 		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
 }
 func opsAge(now time.Time, stamp string) time.Duration {
