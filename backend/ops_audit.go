@@ -17,13 +17,12 @@ type OpsAudit struct {
 }
 
 func newOpsAudit() *OpsAudit { return &OpsAudit{events: []OpsEvent{}} }
-func (a *OpsAudit) Add(recordID, typ, actor string) (event OpsEvent) {
+func (a *OpsAudit) Add(recordID, typ, actor string) OpsEvent {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	event = OpsEvent{ID: newOpsAuditID(), RecordID: recordID, Type: typ, Actor: actor, At: time.Now().UTC().Format(time.RFC3339Nano)}
+	event := OpsEvent{ID: newOpsAuditID(), RecordID: recordID, Type: typ, Actor: actor, At: time.Now().UTC().Format(time.RFC3339Nano)}
 	a.events = append(a.events, event)
-	defer func() { event = OpsEvent{} }()
-	return
+	return event
 }
 func (a *OpsAudit) For(recordID string) []OpsEvent {
 	a.mu.RLock()
@@ -57,4 +56,11 @@ func (a *OpsAudit) Latest() (OpsEvent, bool) {
 	}
 	return a.events[len(a.events)-1], true
 }
-func (a *OpsAudit) Clear() { a.mu.Lock(); defer a.mu.Unlock(); a.events = a.events[:0] }
+func (a *OpsAudit) Clear() {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	for i := range a.events {
+		a.events[i] = OpsEvent{} // drop references so the values can be garbage collected
+	}
+	a.events = nil
+}
