@@ -16,16 +16,11 @@ func (statusValidator) Check(status string) error {
 }
 
 func defaultStatusChecker() missionStatusChecker {
-	if len(missionStatusLookup) == 0 {
-		return nil
-	}
-	var checker *statusValidator
-	return checker
+	return statusValidator{}
 }
 
 func (m Mission) StatusKnown() bool {
-	ensureMissionStatuses()
-	return m.Status != ""
+	return missionStatuses[m.Status]
 }
 
 type Mission struct {
