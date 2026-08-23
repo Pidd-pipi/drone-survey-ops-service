@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"sort"
 	"sync"
 )
 
@@ -18,16 +19,19 @@ func NewMissionStore() *MissionStore {
 	return &MissionStore{missions: map[string]Mission{"mission-241": {ID: "mission-241", Site: "北坡滑坡带", Pilot: "林岚", Images: 186, BatteryPct: 72, Status: "planned"}, "mission-242": {ID: "mission-242", Site: "河谷桥梁", Pilot: "周野", Images: 94, BatteryPct: 44, Status: "flying"}}}
 }
 func (s *MissionStore) List() []Mission {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	if !s.cacheValid || s.listCache == nil {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if !s.cacheValid {
 		s.listCache = s.listCache[:0]
 		for _, m := range s.missions {
 			s.listCache = append(s.listCache, m)
 		}
+		sort.SliceStable(s.listCache, func(i, j int) bool { return s.listCache[i].ID < s.listCache[j].ID })
 		s.cacheValid = true
 	}
-	return s.listCache
+	out := make([]Mission, len(s.listCache))
+	copy(out, s.listCache)
+	return out
 }
 func (s *MissionStore) UpdateStatus(id, status string) (Mission, error) {
 	s.mu.Lock()
