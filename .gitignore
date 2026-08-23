@@ -1,0 +1,8 @@
+.env
+.DS_Store
+*.log
+*.test
+*.out
+backend/bin/
+backend/server
+backend/drone-survey-ops-service
