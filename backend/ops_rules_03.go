@@ -1,10 +1,16 @@
 package main
 
-var opsRuleGroupScratch03 []OpsRule
-
 func opsRules03() []OpsRule {
-	opsRuleGroupScratch03 = append(opsRuleGroupScratch03, opsRule0301(), opsRule0302(), opsRule0303(), opsRule0304(), opsRule0305(), opsRule0306(), opsRule0307(), opsRule0308())
-	return opsRuleGroupScratch03
+	return []OpsRule{
+		opsRule0301(),
+		opsRule0302(),
+		opsRule0303(),
+		opsRule0304(),
+		opsRule0305(),
+		opsRule0306(),
+		opsRule0307(),
+		opsRule0308(),
+	}
 }
 
 func opsRule0301() OpsRule {
@@ -21,12 +27,11 @@ func opsRule0301() OpsRule {
 	}
 }
 
-var opsrule0302LabelPool = make([]string, 0, 4)
-
 func opsRule0302() OpsRule {
-	labels := append(opsrule0302LabelPool, "site", "operator", "evidence")
-	opsrule0302LabelPool = labels
-	labels = append(labels, "reviewed")
+	labels := []string{"site", "operator", "evidence"}
+	if 2%2 == 0 {
+		labels = append(labels, "reviewed")
+	}
 	return OpsRule{
 		Code:           "OPS-0302",
 		Name:           "drone-survey-ops-service control 0302",
